@@ -15,6 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	examplev1alpha1 "github.com/thetechnick/example-operator/apis/example/v1alpha1"
 )
@@ -77,6 +78,10 @@ func (r *NginxReconciler) Reconcile(
 			},
 		},
 	}
+	if err := controllerutil.SetControllerReference(nginx, deploy, r.Scheme); err != nil {
+		return ctrl.Result{}, fmt.Errorf("setting ownerref: %w", err)
+	}
+
 	currentDeploy, err := reconcileDeployment(ctx, log, r.Client, deploy)
 	if err != nil {
 		return ctrl.Result{}, fmt.Errorf("reconciling deployment: %w", err)

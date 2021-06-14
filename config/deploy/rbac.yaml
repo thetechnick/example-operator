@@ -48,7 +48,18 @@ metadata:
   name: example-operator
 rules:
 - apiGroups:
-  - "nginxes.example.thetechnick.ninja"
+  - "apps"
+  resources:
+  - deployments
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+  - create
+  - delete
+- apiGroups:
+  - "example.thetechnick.ninja"
   resources:
   - nginxes
   - nginxes/status

@@ -213,7 +213,18 @@ spec:
               name: example-operator
             rules:
             - apiGroups:
-              - "nginxes.example.thetechnick.ninja"
+              - "apps"
+              resources:
+              - deployments
+              verbs:
+              - get
+              - list
+              - watch
+              - update
+              - create
+              - delete
+            - apiGroups:
+              - "example.thetechnick.ninja"
               resources:
               - nginxes
               - nginxes/status
@@ -276,28 +287,28 @@ spec:
       #   objects:
       #   - object:
 
-    readinessProbes:
-    - selector:
-        type: Kind
-        kind:
-          group: apiextensions.k8s.io
-          kind: CustomResourceDefinition
-      probes:
-      - type: Condition
-        condition:
-          type: Established
-          status: "True"
-    - selector:
-        type: Kind
-        kind:
-          group: apps
-          kind: Deployment
-      probes:
-      - type: Condition
-        condition:
-          type: Available
-          status: "True"
-      - type: FieldsEqual
-        fieldsEqual:
-          fieldA: .status.updatedReplicas
-          fieldB: .status.replicas
+      readinessProbes:
+      - selector:
+          type: Kind
+          kind:
+            group: apiextensions.k8s.io
+            kind: CustomResourceDefinition
+        probes:
+        - type: Condition
+          condition:
+            type: Established
+            status: "True"
+      - selector:
+          type: Kind
+          kind:
+            group: apps
+            kind: Deployment
+        probes:
+        - type: Condition
+          condition:
+            type: Available
+            status: "True"
+        - type: FieldsEqual
+          fieldsEqual:
+            fieldA: .status.updatedReplicas
+            fieldB: .status.replicas
