@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: example-operator
+  namespace: example-operator
+  labels:
+    app.kubernetes.io/name: example-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: example-operator
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: example-operator
+    spec:
+      serviceAccountName: example-operator
+      containers:
+      - name: manager
+        image: quay.io/nschiede/example-operator-manager:main-c8ef646
+        args:
+        - --enable-leader-election
+        resources:
+          limits:
+            cpu: 100m
+            memory: 30Mi
+          requests:
+            cpu: 100m
+            memory: 20Mi
