@@ -109,6 +109,7 @@ func (r *NginxReconciler) Reconcile(
 			Message:            "Nginx is up and running.",
 			ObservedGeneration: nginx.Generation,
 		})
+		nginx.Status.Phase = examplev1alpha1.NginxPhaseReady
 	} else {
 		meta.SetStatusCondition(&nginx.Status.Conditions, metav1.Condition{
 			Type:               examplev1alpha1.NginxAvailable,
@@ -117,6 +118,7 @@ func (r *NginxReconciler) Reconcile(
 			Message:            "Nginx deployment is not available.",
 			ObservedGeneration: nginx.Generation,
 		})
+		nginx.Status.Phase = examplev1alpha1.NginxPhaseNotReady
 	}
 	nginx.Status.ObservedGeneration = nginx.Generation
 
