@@ -65,10 +65,14 @@ spec:
                       spec:
                         description: NginxSpec defines the desired state of a Nginx.
                         properties:
+                          reconcileDelay:
+                            description: How long to sleep before updating .Status.
+                            type: string
                           version:
                             description: Nginx Version to deploy
                             type: string
                         required:
+                        - reconcileDelay
                         - version
                         type: object
                       status:
@@ -162,6 +166,13 @@ spec:
                 storage: true
                 subresources:
                   status: {}
+            status:
+              acceptedNames:
+                kind: ""
+                plural: ""
+              conditions: []
+              storedVersions: []
+
         - object:
             apiVersion: v1
             kind: ServiceAccount
@@ -255,26 +266,30 @@ spec:
             apiVersion: apps/v1
             kind: Deployment
             metadata:
-              name: example-operator
+              name: example-operator-v2
               namespace: example-operator
               labels:
                 app.kubernetes.io/name: example-operator
+                app.kubernetes.io/version: v2
             spec:
               replicas: 1
               selector:
                 matchLabels:
                   app.kubernetes.io/name: example-operator
+                  app.kubernetes.io/version: v2
               template:
                 metadata:
                   labels:
                     app.kubernetes.io/name: example-operator
+                    app.kubernetes.io/version: v2
                 spec:
                   serviceAccountName: example-operator
                   containers:
                   - name: manager
-                    image: quay.io/nschiede/example-operator-manager:main-c8ef646
+                    image: quay.io/nschiede/example-operator-manager:main-eb67776
                     args:
                     - --enable-leader-election
+                    - --label-selector=operator-version=v2
                     resources:
                       limits:
                         cpu: 100m
@@ -283,10 +298,45 @@ spec:
                         cpu: 100m
                         memory: 20Mi
 
-      # - name: handover
-      #   objects:
-      #   - object:
-
+      - name: handover
+        objects:
+        - object:
+            apiVersion: coordination.thetechnick.ninja/v1alpha1
+            kind: ClusterAdoption
+            metadata:
+              name: example-operator
+            spec:
+              strategy:
+                type: Static
+                static:
+                  labels:
+                    operator-version: v2
+              targetAPI:
+                group: example.thetechnick.ninja
+                kind: Nginx
+                version: v1alpha1
+        - object:
+            apiVersion: coordination.thetechnick.ninja/v1alpha1
+            kind: ClusterHandover
+            metadata:
+              name: example-operator-v2
+            spec:
+              strategy:
+                type: Relabel
+                relabel:
+                  labelKey: operator-version
+                  fromValue: v1
+                  toValue: v2
+                  maxUnavailable: 1
+              targetAPI:
+                group: example.thetechnick.ninja
+                kind: Nginx
+                version: v1alpha1
+              probes:
+              - type: Condition
+                condition:
+                  type: Available
+                  status: "True"
       readinessProbes:
       - selector:
           type: Kind
@@ -312,3 +362,13 @@ spec:
           fieldsEqual:
             fieldA: .status.updatedReplicas
             fieldB: .status.replicas
+      - selector:
+          type: Kind
+          kind:
+            group: coordination.thetechnick.ninja
+            kind: ClusterHandover
+        probes:
+        - type: Condition
+          condition:
+            type: Completed
+            status: "True"
