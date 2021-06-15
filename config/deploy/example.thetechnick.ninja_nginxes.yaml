@@ -43,10 +43,14 @@ spec:
           spec:
             description: NginxSpec defines the desired state of a Nginx.
             properties:
+              reconcileDelay:
+                description: How long to sleep before updating .Status.
+                type: string
               version:
                 description: Nginx Version to deploy
                 type: string
             required:
+            - reconcileDelay
             - version
             type: object
           status:

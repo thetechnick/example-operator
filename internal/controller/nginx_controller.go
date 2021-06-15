@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
@@ -121,6 +122,9 @@ func (r *NginxReconciler) Reconcile(
 		nginx.Status.Phase = examplev1alpha1.NginxPhaseNotReady
 	}
 	nginx.Status.ObservedGeneration = nginx.Generation
+
+	// Simulate "hard work being done"
+	time.Sleep(nginx.Spec.ReconcileDelay.Duration)
 
 	return ctrl.Result{}, r.Status().Update(ctx, nginx)
 }

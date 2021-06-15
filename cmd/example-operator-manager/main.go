@@ -7,13 +7,16 @@ import (
 	"net/http/pprof"
 	"os"
 
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	exampleapis "github.com/thetechnick/example-operator/apis"
+	examplev1alpha1 "github.com/thetechnick/example-operator/apis/example/v1alpha1"
 	"github.com/thetechnick/example-operator/internal/controller"
 )
 
@@ -31,6 +34,7 @@ func main() {
 	var (
 		metricsAddr          string
 		pprofAddr            string
+		selector             string
 		enableLeaderElection bool
 	)
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
@@ -38,9 +42,23 @@ func main() {
 	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
+	flag.StringVar(&selector, "label-selector", "", "Label selector to limit the objects this instance operates on.")
 	flag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	// Limit this instance to the given selector.
+	var cacheSelector labels.Selector
+	if selector != "" {
+		var err error
+		cacheSelector, err = labels.Parse(selector)
+		if err != nil {
+			setupLog.Error(err, "parsing selector")
+			os.Exit(1)
+		}
+	} else {
+		cacheSelector = labels.Everything()
+	}
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                     scheme,
@@ -49,6 +67,13 @@ func main() {
 		LeaderElectionResourceLock: "leases",
 		LeaderElection:             enableLeaderElection,
 		LeaderElectionID:           "8a4hp84a6s.nginx-operator-lock",
+		NewCache: cache.BuilderWithOptions(cache.Options{
+			SelectorsByObject: cache.SelectorsByObject{
+				&examplev1alpha1.Nginx{}: {
+					Label: cacheSelector,
+				},
+			},
+		}),
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")

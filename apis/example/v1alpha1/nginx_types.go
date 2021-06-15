@@ -8,6 +8,8 @@ import (
 type NginxSpec struct {
 	// Nginx Version to deploy
 	Version string `json:"version"`
+	// How long to sleep before updating .Status.
+	ReconcileDelay metav1.Duration `json:"reconcileDelay"`
 }
 
 // NginxStatus defines the observed state of a Nginx
