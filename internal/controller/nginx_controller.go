@@ -30,6 +30,7 @@ type NginxReconciler struct {
 func (r *NginxReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&examplev1alpha1.Nginx{}).
+		Owns(&appsv1.Deployment{}).
 		Complete(r)
 }
 
