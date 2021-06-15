@@ -44,7 +44,7 @@ const (
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Status",type="string",JSONPath=".status.phase"
-// +kubebuilder:printcolumn:name="Operator Version",type="date",JSONPath=".status.operatorVersion"
+// +kubebuilder:printcolumn:name="Operator Version",type="string",JSONPath=".status.operatorVersion"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 type Nginx struct {
 	metav1.TypeMeta   `json:",inline"`

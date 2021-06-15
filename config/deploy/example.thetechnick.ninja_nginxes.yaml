@@ -22,7 +22,7 @@ spec:
       type: string
     - jsonPath: .status.operatorVersion
       name: Operator Version
-      type: date
+      type: string
     - jsonPath: .metadata.creationTimestamp
       name: Age
       type: date

@@ -265,22 +265,22 @@ spec:
             apiVersion: apps/v1
             kind: Deployment
             metadata:
-              name: example-operator-v2
+              name: example-operator-v1
               namespace: example-operator
               labels:
                 app.kubernetes.io/name: example-operator
-                app.kubernetes.io/version: v2
+                app.kubernetes.io/version: v1
             spec:
               replicas: 1
               selector:
                 matchLabels:
                   app.kubernetes.io/name: example-operator
-                  app.kubernetes.io/version: v2
+                  app.kubernetes.io/version: v1
               template:
                 metadata:
                   labels:
                     app.kubernetes.io/name: example-operator
-                    app.kubernetes.io/version: v2
+                    app.kubernetes.io/version: v1
                 spec:
                   serviceAccountName: example-operator
                   containers:
@@ -288,8 +288,8 @@ spec:
                     image: quay.io/nschiede/example-operator-manager:main-eac9868
                     args:
                     - --enable-leader-election
-                    - --label-selector=operator-version=v2
-                    - --version=v2
+                    - --label-selector=operator-version=v1
+                    - --version=v1
                     resources:
                       limits:
                         cpu: 100m
@@ -302,32 +302,16 @@ spec:
         objects:
         - object:
             apiVersion: coordination.thetechnick.ninja/v1alpha1
-            kind: ClusterAdoption
-            metadata:
-              name: example-operator
-            spec:
-              strategy:
-                type: Static
-                static:
-                  labels:
-                    operator-version: v2
-              targetAPI:
-                group: example.thetechnick.ninja
-                kind: Nginx
-                version: v1alpha1
-        - object:
-            apiVersion: coordination.thetechnick.ninja/v1alpha1
             kind: ClusterHandover
             metadata:
-              name: example-operator-v2
+              name: example-operator-v1
             spec:
               strategy:
                 type: Relabel
                 relabel:
                   labelKey: operator-version
-                  fromValue: v1
-                  toValue: v2
-                  statusPath: .status.operatorVersion
+                  fromValue: v0
+                  toValue: v1
                   maxUnavailable: 1
               targetAPI:
                 group: example.thetechnick.ninja
@@ -338,6 +322,10 @@ spec:
                 condition:
                   type: Available
                   status: "True"
+              - type: FieldsEqual
+                fieldsEqual:
+                  fieldA: .status.operatorVersion
+                  fieldB: .metadata.labels.operator-version
       readinessProbes:
       - selector:
           type: Kind

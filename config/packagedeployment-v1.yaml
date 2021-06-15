@@ -44,7 +44,7 @@ spec:
                   type: string
                 - jsonPath: .status.operatorVersion
                   name: Operator Version
-                  type: date
+                  type: string
                 - jsonPath: .metadata.creationTimestamp
                   name: Age
                   type: date
@@ -285,7 +285,7 @@ spec:
                   serviceAccountName: example-operator
                   containers:
                   - name: manager
-                    image: quay.io/nschiede/example-operator-manager:main-7774094
+                    image: quay.io/nschiede/example-operator-manager:main-eac9868
                     args:
                     - --enable-leader-election
                     - --label-selector=operator-version=v1
@@ -327,6 +327,7 @@ spec:
                   labelKey: operator-version
                   fromValue: v0
                   toValue: v1
+                  statusPath: .status.operatorVersion
                   maxUnavailable: 1
               targetAPI:
                 group: example.thetechnick.ninja
@@ -337,10 +338,6 @@ spec:
                 condition:
                   type: Available
                   status: "True"
-              - type: FieldsEqual
-                fieldsEqual:
-                  fieldA: .status.operatorVersion
-                  fieldB: .metadata.labels.operator-version
       readinessProbes:
       - selector:
           type: Kind
