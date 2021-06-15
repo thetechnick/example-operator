@@ -68,7 +68,7 @@ func main() {
 		Port:                       9443,
 		LeaderElectionResourceLock: "leases",
 		LeaderElection:             enableLeaderElection,
-		LeaderElectionID:           "8a4hp84a6s.nginx-operator-lock",
+		LeaderElectionID:           "8a4hp84a6s.nginx-operator-lock." + version,
 		NewCache: cache.BuilderWithOptions(cache.Options{
 			SelectorsByObject: cache.SelectorsByObject{
 				&examplev1alpha1.Nginx{}: {
