@@ -42,6 +42,9 @@ spec:
                 - jsonPath: .status.phase
                   name: Status
                   type: string
+                - jsonPath: .status.operatorVersion
+                  name: Operator Version
+                  type: date
                 - jsonPath: .metadata.creationTimestamp
                   name: Age
                   type: date
@@ -155,6 +158,9 @@ spec:
                             description: The most recent generation observed by the controller.
                             format: int64
                             type: integer
+                          operatorVersion:
+                            description: Version of the operator
+                            type: string
                           phase:
                             description: 'DEPRECATED: This field is not part of any API contract
                               it will go away as soon as kubectl can print conditions! Human readable
@@ -166,13 +172,6 @@ spec:
                 storage: true
                 subresources:
                   status: {}
-            status:
-              acceptedNames:
-                kind: ""
-                plural: ""
-              conditions: []
-              storedVersions: []
-
         - object:
             apiVersion: v1
             kind: ServiceAccount
@@ -286,10 +285,11 @@ spec:
                   serviceAccountName: example-operator
                   containers:
                   - name: manager
-                    image: quay.io/nschiede/example-operator-manager:main-eb67776
+                    image: quay.io/nschiede/example-operator-manager:main-7774094
                     args:
                     - --enable-leader-election
                     - --label-selector=operator-version=v1
+                    - --version=v1
                     resources:
                       limits:
                         cpu: 100m
@@ -337,6 +337,10 @@ spec:
                 condition:
                   type: Available
                   status: "True"
+              - type: FieldsEqual
+                fieldsEqual:
+                  fieldA: .status.operatorVersion
+                  fieldB: .metadata.labels.operator-version
       readinessProbes:
       - selector:
           type: Kind

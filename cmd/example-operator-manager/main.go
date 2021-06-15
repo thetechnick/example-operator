@@ -35,6 +35,7 @@ func main() {
 		metricsAddr          string
 		pprofAddr            string
 		selector             string
+		version              string
 		enableLeaderElection bool
 	)
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
@@ -43,6 +44,7 @@ func main() {
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
 	flag.StringVar(&selector, "label-selector", "", "Label selector to limit the objects this instance operates on.")
+	flag.StringVar(&version, "version", "v0", "version to report on operands.")
 	flag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
@@ -118,9 +120,10 @@ func main() {
 	}
 
 	if err = (&controller.NginxReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Nginx"),
-		Scheme: mgr.GetScheme(),
+		Client:  mgr.GetClient(),
+		Log:     ctrl.Log.WithName("controllers").WithName("Nginx"),
+		Scheme:  mgr.GetScheme(),
+		Version: version,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Nginx")
 		os.Exit(1)

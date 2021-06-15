@@ -23,8 +23,9 @@ import (
 
 type NginxReconciler struct {
 	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	Log     logr.Logger
+	Scheme  *runtime.Scheme
+	Version string
 }
 
 func (r *NginxReconciler) SetupWithManager(mgr ctrl.Manager) error {
@@ -123,6 +124,7 @@ func (r *NginxReconciler) Reconcile(
 		nginx.Status.Phase = examplev1alpha1.NginxPhaseNotReady
 	}
 	nginx.Status.ObservedGeneration = nginx.Generation
+	nginx.Status.OperatorVersion = r.Version
 
 	// Simulate "hard work being done"
 	time.Sleep(nginx.Spec.ReconcileDelay.Duration)
